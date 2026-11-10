@@ -137,8 +137,37 @@ def output_spatial_size(input_size, kernel, stride, padding):
     # TODO: return the conv/pool output spatial dimension from input_size, kernel, stride, padding
     return int(np.floor((input_size + 2 * padding - kernel) / stride) + 1)
 
-# Step 15 - im2col (not yet solved)
-# TODO: implement
+# Step 15 - im2col
+def pad_2d(images, pad):
+    # TODO: zero-pad the spatial (H, W) dims of a 4D (N, C, H, W) tensor by `pad` on each side.
+    if pad == 0:
+        return images 
+    out = np.zeros((images.shape[0], images.shape[1], images.shape[2]+(2*pad), images.shape[3]+(2*pad)), dtype=images.dtype)
+    
+    out[:,:,pad:pad+images.shape[2],pad:pad+images.shape[3]] = images
+    return out
+
+def output_spatial_size(input_size, kernel, stride, padding):
+    # TODO: return the conv/pool output spatial dimension from input_size, kernel, stride, padding
+    return int(np.floor((input_size + 2 * padding - kernel) / stride) + 1)
+
+def im2col(images, kernel_h, kernel_w, stride, padding):
+    # TODO: Unroll overlapping patches of a 4D image tensor into a 2D column matrix.
+    N,C,H,W = images.shape
+    x = pad_2d(images, padding)
+    out_h = output_spatial_size(H, kernel_h, stride, padding)
+    out_w = output_spatial_size(W, kernel_w, stride, padding)
+
+    out = np.empty((N*out_h*out_w, C*kernel_h*kernel_w), dtype=images.dtype)
+    counter = 0
+    for i in range(N):
+        for j in range(out_h):
+            for k in range(out_w):
+                hs,ws = j*stride, k*stride 
+                out[counter] = x[i,:,hs:hs+kernel_h,ws:ws+kernel_w].reshape(-1)
+                counter += 1
+    
+    return out
 
 # Step 16 - col2im (not yet solved)
 # TODO: implement
