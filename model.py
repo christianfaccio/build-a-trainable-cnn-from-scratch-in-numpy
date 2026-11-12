@@ -169,11 +169,65 @@ def im2col(images, kernel_h, kernel_w, stride, padding):
     
     return out
 
-# Step 16 - col2im (not yet solved)
-# TODO: implement
+# Step 16 - col2im
+def output_spatial_size(input_size, kernel, stride, padding):
+    # TODO: return the conv/pool output spatial dimension from input_size, kernel, stride, padding
+    return int(np.floor((input_size + 2 * padding - kernel) / stride) + 1)
 
-# Step 17 - conv2d_forward (not yet solved)
-# TODO: implement
+def col2im(cols, input_shape, kernel_h, kernel_w, stride, padding):
+    # TODO: re-roll a (N*out_h*out_w, C*kh*kw) column matrix back into a (N, C, H, W) tensor
+    N,C,H,W = input_shape
+    out_w = output_spatial_size(W, kernel_w, stride, padding)
+    out_h = output_spatial_size(H, kernel_h, stride, padding)
+    acc = np.zeros((N,C,H+2*padding,W+2*padding), dtype=cols.dtype)
+    blocks = cols.reshape(N, out_h, out_w, C, kernel_h, kernel_w)
+    for i in range(kernel_h):
+        for j in range(kernel_w):
+            acc[:,:,i:i+stride*out_h:stride,j:j+stride*out_w:stride] += blocks[:, :, :, :, i, j].transpose(0, 3, 1, 2)
+    
+    return acc[:,:,padding:H+padding,padding:W+padding]
+
+# Step 17 - conv2d_forward
+def output_spatial_size(input_size, kernel, stride, padding):
+    # TODO: return the conv/pool output spatial dimension from input_size, kernel, stride, padding
+    return int(np.floor((input_size + 2 * padding - kernel) / stride) + 1)
+
+def im2col(images, kernel_h, kernel_w, stride, padding):
+    # TODO: Unroll overlapping patches of a 4D image tensor into a 2D column matrix.
+    N,C,H,W = images.shape
+    x = pad_2d(images, padding)
+    out_h = output_spatial_size(H, kernel_h, stride, padding)
+    out_w = output_spatial_size(W, kernel_w, stride, padding)
+
+    out = np.empty((N*out_h*out_w, C*kernel_h*kernel_w), dtype=images.dtype)
+    counter = 0
+    for i in range(N):
+        for j in range(out_h):
+            for k in range(out_w):
+                hs,ws = j*stride, k*stride 
+                out[counter] = x[i,:,hs:hs+kernel_h,ws:ws+kernel_w].reshape(-1)
+                counter += 1
+    
+    return out
+
+def conv2d_forward(x, weights, bias, stride, padding):
+    # TODO: convolve x with weights using im2col, add bias, return output and a backprop cache.
+    C_out, C_in, kh, kw = weights.shape # dim (C_out,C_in,kh,kw)
+    weights = weights.reshape(C_out,C_in*kh*kw) # dim (C_in*kh*kw,C_out)
+    N,C,H,W = x.shape
+    out_h = output_spatial_size(H,kh,stride,padding)
+    out_w = output_spatial_size(W,kw,stride,padding)
+    col = im2col(x, kh, kw, stride, padding)    # dim (N*out_h*out_w,C_in*kh*kw)
+    out = col @ weights.T + bias 
+    return out.reshape(N,C_out,out_h,out_w), {
+        'x_shape': x.shape,
+        'weights': weights,
+        'cols': col,
+        'stride': stride,
+        'padding': padding,
+        'kernel_h': kh,
+        'kernel_w': kw 
+    }
 
 # Step 18 - conv2d_grad_input (not yet solved)
 # TODO: implement
