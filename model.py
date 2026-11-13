@@ -219,7 +219,7 @@ def conv2d_forward(x, weights, bias, stride, padding):
     out_w = output_spatial_size(W,kw,stride,padding)
     col = im2col(x, kh, kw, stride, padding)    # dim (N*out_h*out_w,C_in*kh*kw)
     out = col @ weights.T + bias 
-    return out.reshape(N,C_out,out_h,out_w), {
+    return out.reshape(N,out_h,out_w,C_out).transpose(0,3,1,2), {
         'x_shape': x.shape,
         'weights': weights,
         'cols': col,
@@ -229,8 +229,30 @@ def conv2d_forward(x, weights, bias, stride, padding):
         'kernel_w': kw 
     }
 
-# Step 18 - conv2d_grad_input (not yet solved)
-# TODO: implement
+# Step 18 - conv2d_grad_input
+def col2im(cols, input_shape, kernel_h, kernel_w, stride, padding):
+    # TODO: re-roll a (N*out_h*out_w, C*kh*kw) column matrix back into a (N, C, H, W) tensor
+    N,C,H,W = input_shape
+    out_w = output_spatial_size(W, kernel_w, stride, padding)
+    out_h = output_spatial_size(H, kernel_h, stride, padding)
+    acc = np.zeros((N,C,H+2*padding,W+2*padding), dtype=cols.dtype)
+    blocks = cols.reshape(N, out_h, out_w, C, kernel_h, kernel_w)
+    for i in range(kernel_h):
+        for j in range(kernel_w):
+            acc[:,:,i:i+stride*out_h:stride,j:j+stride*out_w:stride] += blocks[:, :, :, :, i, j].transpose(0, 3, 1, 2)
+    
+    return acc[:,:,padding:H+padding,padding:W+padding]
+
+def conv2d_grad_input(d_out, cache):
+    # TODO: backprop d_out through the conv input using col2im
+    # d_out dims: (N,C_out,out_h,out_w)
+    N,C_out,out_h,out_w = d_out.shape
+    dY = d_out.transpose(0,2,3,1)
+    dY = dY.reshape(-1,C_out)   # shape (N*out_h*out_w)
+    # weights has shape (C_out, C_in*kh*kw)
+    dcols = dY @ cache['weights']   # shape (N*out_h*out_w, C*kh*kw)
+    dx = col2im(dcols, cache['x_shape'], cache['kernel_h'], cache['kernel_w'], cache['stride'], cache['padding']) 
+    return dx
 
 # Step 19 - conv2d_grad_weights (not yet solved)
 # TODO: implement
