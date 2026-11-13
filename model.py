@@ -254,8 +254,13 @@ def conv2d_grad_input(d_out, cache):
     dx = col2im(dcols, cache['x_shape'], cache['kernel_h'], cache['kernel_w'], cache['stride'], cache['padding']) 
     return dx
 
-# Step 19 - conv2d_grad_weights (not yet solved)
-# TODO: implement
+# Step 19 - conv2d_grad_weights
+def conv2d_grad_weights(d_out, cache):
+    # TODO: return dL/dW shaped (C_out, C_in, kH, kW) from d_out and the im2col cache.
+    N,C_out,out_h,out_w = d_out.shape
+    d_out = d_out.transpose(1,0,2,3).reshape(C_out, -1)
+    d_W = d_out @ cache['cols']
+    return d_W.reshape(C_out,-1,cache['kernel_h'],cache['kernel_w'])
 
 # Step 20 - conv2d_grad_bias (not yet solved)
 # TODO: implement
