@@ -294,8 +294,31 @@ def conv2d_backward(d_out, cache):
     # TODO: return (dx, dW, db) using the conv2d gradient helpers and the forward cache
     return (conv2d_grad_input(d_out, cache), conv2d_grad_weights(d_out, cache), conv2d_grad_bias(d_out))
 
-# Step 22 - maxpool2d_forward (not yet solved)
-# TODO: implement
+# Step 22 - maxpool2d_forward
+def output_spatial_size(input_size, kernel, stride, padding):
+    # TODO: return the conv/pool output spatial dimension from input_size, kernel, stride, padding
+    return int(np.floor((input_size + 2 * padding - kernel) / stride) + 1)
+
+def maxpool2d_forward(x, kernel, stride):
+    # TODO: run 2D max pooling and cache the in-window argmax of each output cell.
+    N,C,H,W = x.shape
+    out_h = output_spatial_size(H,kernel,stride,padding=0)
+    out_w = output_spatial_size(W,kernel,stride,padding=0)
+    out = np.empty((N,C,out_h,out_w), dtype=x.dtype)
+    argmax = np.empty((N,C,out_h,out_w), dtype=int)
+    for n in range(N):
+        for c in range(C):
+            for i in range(out_h):
+                for j in range(out_w):
+                    hs, ws = i*stride, j*stride 
+                    out[n,c,i,j] = np.max(x[n,c,hs:hs+kernel,ws:ws+kernel])
+                    argmax[n,c,i,j] = np.argmax(x[n,c,hs:hs+kernel,ws:ws+kernel])
+    return (out, {
+        'x_shape': x.shape,
+        'argmax': argmax,
+        'kernel': kernel,
+        'stride': stride 
+    })
 
 # Step 23 - scatter_grad_window (not yet solved)
 # TODO: implement
