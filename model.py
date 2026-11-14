@@ -267,8 +267,32 @@ def conv2d_grad_bias(d_out):
     # TODO: return a length C_out gradient by reducing d_out over batch and spatial axes
     return np.add.reduce(d_out, axis=(0,2,3))
 
-# Step 21 - conv2d_backward (not yet solved)
-# TODO: implement
+# Step 21 - conv2d_backward
+def conv2d_grad_input(d_out, cache):
+    # TODO: backprop d_out through the conv input using col2im
+    # d_out dims: (N,C_out,out_h,out_w)
+    N,C_out,out_h,out_w = d_out.shape
+    dY = d_out.transpose(0,2,3,1)
+    dY = dY.reshape(-1,C_out)   # shape (N*out_h*out_w)
+    # weights has shape (C_out, C_in*kh*kw)
+    dcols = dY @ cache['weights']   # shape (N*out_h*out_w, C*kh*kw)
+    dx = col2im(dcols, cache['x_shape'], cache['kernel_h'], cache['kernel_w'], cache['stride'], cache['padding']) 
+    return dx
+
+def conv2d_grad_weights(d_out, cache):
+    # TODO: return dL/dW shaped (C_out, C_in, kH, kW) from d_out and the im2col cache.
+    N,C_out,out_h,out_w = d_out.shape
+    d_out = d_out.transpose(1,0,2,3).reshape(C_out, -1)
+    d_W = d_out @ cache['cols']
+    return d_W.reshape(C_out,-1,cache['kernel_h'],cache['kernel_w'])
+
+def conv2d_grad_bias(d_out):
+    # TODO: return a length C_out gradient by reducing d_out over batch and spatial axes
+    return np.add.reduce(d_out, axis=(0,2,3))
+
+def conv2d_backward(d_out, cache):
+    # TODO: return (dx, dW, db) using the conv2d gradient helpers and the forward cache
+    return (conv2d_grad_input(d_out, cache), conv2d_grad_weights(d_out, cache), conv2d_grad_bias(d_out))
 
 # Step 22 - maxpool2d_forward (not yet solved)
 # TODO: implement
