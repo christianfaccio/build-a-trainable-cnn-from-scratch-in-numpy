@@ -262,8 +262,10 @@ def conv2d_grad_weights(d_out, cache):
     d_W = d_out @ cache['cols']
     return d_W.reshape(C_out,-1,cache['kernel_h'],cache['kernel_w'])
 
-# Step 20 - conv2d_grad_bias (not yet solved)
-# TODO: implement
+# Step 20 - conv2d_grad_bias
+def conv2d_grad_bias(d_out):
+    # TODO: return a length C_out gradient by reducing d_out over batch and spatial axes
+    return np.add.reduce(d_out, axis=(0,2,3))
 
 # Step 21 - conv2d_backward (not yet solved)
 # TODO: implement
