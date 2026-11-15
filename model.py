@@ -499,8 +499,32 @@ def adam_param_step(param, m_hat, v_hat, lr, eps):
     # TODO: apply one Adam parameter update using bias-corrected moments
     return param - lr*(m_hat/(np.sqrt(v_hat)+eps))
 
-# Step 41 - adam_step (not yet solved)
-# TODO: implement
+# Step 41 - adam_step
+import numpy as np
+
+def adam_update_m(m, grad, beta_one):
+    # TODO: return the updated first moment estimate using beta_one and grad.
+    return beta_one*m + (1-beta_one)*grad
+
+def adam_update_v(v, grad, beta_two):
+    # TODO: return the updated Adam second moment estimate as an EMA of squared gradients.
+    return beta_two*v + (1-beta_two)*(grad**2)
+
+def adam_bias_correct(moment, beta, t):
+    # TODO: return moment divided by (1 - beta**t) to undo Adam's zero-init bias.
+    return moment / (1-beta**t)
+
+def adam_param_step(param, m_hat, v_hat, lr, eps):
+    # TODO: apply one Adam parameter update using bias-corrected moments
+    return param - lr*(m_hat/(np.sqrt(v_hat)+eps))
+
+def adam_step(param, grad, m, v, t, lr, beta_one, beta_two, eps):
+    new_m = adam_update_m(m, grad, beta_one)
+    new_v = adam_update_v(v, grad, beta_two)
+    m_hat = adam_bias_correct(new_m, beta_one, t)
+    v_hat = adam_bias_correct(new_v, beta_two, t)
+    new_param = adam_param_step(param, m_hat, v_hat, lr, eps)
+    return new_param, new_m, new_v
 
 # Step 42 - init_conv_layer (not yet solved)
 # TODO: implement
