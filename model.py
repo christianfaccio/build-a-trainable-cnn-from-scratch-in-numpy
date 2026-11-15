@@ -447,8 +447,24 @@ def softmax_cross_entropy_forward(logits, y):
     # TODO: return the mean cross-entropy loss for logits (N, C) and integer labels y (N,).
     return cross_entropy_loss(stable_softmax(logits), y)
 
-# Step 35 - softmax_cross_entropy_backward (not yet solved)
-# TODO: implement
+# Step 35 - softmax_cross_entropy_backward
+def stable_softmax(logits):
+    # TODO: Compute a numerically stable softmax row-wise over (N, C) logits.
+    return exp_shifted(logits) / row_sum(exp_shifted(logits))
+
+def one_hot(labels, num_classes):
+    # TODO: convert integer labels into a (N, num_classes) one-hot float matrix
+    out = np.zeros((labels.shape[0], num_classes), dtype=np.float64)
+    for i in range(labels.shape[0]):
+        for j in range(num_classes):
+            if labels[i] == j:
+                out[i][j] = 1.0
+    return out
+
+def softmax_cross_entropy_backward(logits, y):
+    # TODO: return the fused softmax-cross-entropy gradient of shape (N, C).
+    N,C = logits.shape
+    return (stable_softmax(logits) - one_hot(y, C))/N
 
 # Step 36 - sgd_step (not yet solved)
 # TODO: implement
