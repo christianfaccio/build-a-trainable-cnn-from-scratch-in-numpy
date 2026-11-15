@@ -605,8 +605,24 @@ def backward_conv_block(dout, cache):
     # TODO: backprop dout through the cached pool, relu, and conv layers in reverse order.
     return conv2d_backward(relu_backward(maxpool2d_backward(dout, cache['pool_cache']), cache['relu_cache']), cache['conv_cache'])
 
-# Step 49 - backward_classifier_block (not yet solved)
-# TODO: implement
+# Step 49 - backward_classifier_block
+def backward_classifier_block(dlogits, cache):
+    # TODO: backprop through fc2 -> relu -> fc1 -> flatten using the cached values
+    x, dW2, db2 = linear_backward(dlogits, cache['fc2_cache'])
+    x = relu_backward(x, cache['relu_cache'])
+    x, dW1, db1 = linear_backward(x, cache['fc1_cache'])
+    x = flatten_backward(x, cache['flatten_cache'])
+    return {
+        'dx': x,
+        'fc1': {
+            'dW': dW1,
+            'db': db1
+        },
+        'fc2': {
+            'dW': dW2,
+            'db': db2 
+        }
+    }
 
 # Step 50 - lenet_backward (not yet solved)
 # TODO: implement
