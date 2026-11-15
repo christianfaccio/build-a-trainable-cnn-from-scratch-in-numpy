@@ -672,8 +672,13 @@ def shuffle_indices(n, seed=0):
     rng = np.random.RandomState(seed)
     return rng.permutation(n)
 
-# Step 54 - train_test_split (not yet solved)
-# TODO: implement
+# Step 54 - train_test_split
+def train_test_split(x, y, test_fraction=0.2, seed=0):
+    n = x.shape[0]
+    idx = shuffle_indices(n, seed=seed)
+    n_test = int(n * test_fraction)
+    test_idx, train_idx = idx[:n_test], idx[n_test:]
+    return x[train_idx], y[train_idx], x[test_idx], y[test_idx]
 
 # Step 55 - iterate_minibatches (not yet solved)
 # TODO: implement
