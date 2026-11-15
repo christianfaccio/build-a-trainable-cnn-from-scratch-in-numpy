@@ -526,8 +526,23 @@ def adam_step(param, grad, m, v, t, lr, beta_one, beta_two, eps):
     new_param = adam_param_step(param, m_hat, v_hat, lr, eps)
     return new_param, new_m, new_v
 
-# Step 42 - init_conv_layer (not yet solved)
-# TODO: implement
+# Step 42 - init_conv_layer
+def he_init(shape, fan_in, seed):
+    # TODO: sample a weight tensor from a normal distribution scaled by He std using the seed.
+    np.random.seed(seed)
+    std = he_std(fan_in)
+    return np.random.normal(0, std, shape)
+
+def init_zero_bias(length):
+    # TODO: return a 1D float array of zeros with the given length.
+    return np.zeros(length, dtype=np.float64)
+
+def init_conv_layer(out_channels, in_channels, kernel_size, seed=0):
+    # TODO: Build He-initialized weights and a zero bias for a single conv layer.
+    return {
+        'W': he_init((out_channels, in_channels, kernel_size, kernel_size), in_channels*kernel_size*kernel_size, seed),
+        'b': init_zero_bias(out_channels)
+    }
 
 # Step 43 - init_linear_layer (not yet solved)
 # TODO: implement
