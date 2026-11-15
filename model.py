@@ -329,8 +329,28 @@ def scatter_grad_window(grad_value, argmax_index, kernel):
     out[argmax_index//kernel,argmax_index%kernel] = grad_value
     return out
 
-# Step 24 - maxpool2d_backward (not yet solved)
-# TODO: implement
+# Step 24 - maxpool2d_backward
+def scatter_grad_window(grad_value, argmax_index, kernel):
+    # TODO: place grad_value at the argmax position within a (kernel, kernel) zero array.
+    out = np.zeros((kernel,kernel))
+    out[argmax_index//kernel,argmax_index%kernel] = grad_value
+    return out
+
+def maxpool2d_backward(d_out, cache):
+    # TODO: scatter each d_out value to the cached argmax position in its window
+    out = np.zeros(cache['x_shape'], dtype=d_out.dtype)
+
+    N,C,out_h,out_w = d_out.shape # NOTE: pooling does not change the number of channels
+    s,k = cache['stride'], cache['kernel']
+    for n in range(N):
+        for c in range(C):
+            for h in range(out_h):
+                hs = h*s
+                for w in range(out_w):
+                    ws = w*s
+                    window_grad = scatter_grad_window(d_out[n,c,h,w], cache['argmax'][n,c,h,w], k)
+                    out[n,c,hs:hs+k,ws:ws+k] += window_grad
+    return out
 
 # Step 25 - relu_forward (not yet solved)
 # TODO: implement
